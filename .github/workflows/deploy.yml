@@ -3,13 +3,21 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Set this to your default branch
+      - main
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
+  deployments: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -18,6 +26,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+          static_site_generator: next
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,11 +49,8 @@ jobs:
 
       - name: Build project
         run: pnpm build
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v4
-        with:
-          enablement: true  # This will attempt to enable GitHub Pages
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -46,11 +58,11 @@ jobs:
           path: ./out
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
 
     steps:
       - name: Deploy to GitHub Pages
