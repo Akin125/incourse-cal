@@ -6,7 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
@@ -14,7 +13,6 @@ permissions:
   actions: write
   deployments: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -57,13 +55,19 @@ jobs:
           SKIP_TYPE_CHECK: true
           CI: false
 
-      - name: List output directory
-        run: ls -la out
+      # Debugging steps to verify build output
+      - name: List root directory
+        run: ls -la
 
+      - name: List .next directory
+        run: ls -la .next
+        continue-on-error: true
+
+      # Main fix: Use correct output directory
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./.next/static  # Updated path for static export
 
   deploy:
     environment:
