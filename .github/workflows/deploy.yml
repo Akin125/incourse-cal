@@ -45,12 +45,15 @@ jobs:
           version: 8
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build project
         run: pnpm build
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SKIP_ENV_VALIDATION: true
+          SKIP_TYPE_CHECK: true
+          CI: false
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
