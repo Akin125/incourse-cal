@@ -1,6 +1,7 @@
 {
   "name": "incourse-cal",
   "version": "0.1.0",
+  "homepage": "/",
   "private": false,
   "scripts": {
     "build": "next build",
