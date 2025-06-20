@@ -8,7 +8,7 @@ A privacy-focused, user-friendly web application to help 300 level medical and d
 
 - **Easy Calculation**: Input your 300L incourse and 200L MBE scores with a simple interface and get instant results.
 - **Instant Results**: Get your eligibility status and detailed breakdown as soon as you calculate.
-- **MBE Ready**: Designed specifically for INCOHS MBE requirements, following the official grading and eligibility rules.
+- **MBE Ready**: Designed specifically for OAU COHS First MBE requirements, following the official grading and eligibility rules.
 - **Privacy First**: No tracking, analytics, or data transmission. All calculations and results are visible only to you, and happen entirely in your browser.
 - **Downloadable Reports**: Generate and download a detailed score report as a PNG image for your personal records.
 
@@ -95,7 +95,7 @@ yarn start
 1. **Input Scores**
    - Enter your name (optional), class, and scores for Anatomy, Biochemistry, Physiology (300L incourse and 200L MBE).
 2. **Calculate**
-   - The app computes your aggregate and eligibility for the MBE using INCOHS rules.
+   - The app computes your aggregate and required score for the MBE using OAU COHS rules.
 3. **Download Report**
    - You can download a PNG report of your results for your personal use.
 
@@ -136,7 +136,7 @@ See [LICENSE](LICENSE) for details.
 
 ## 👨‍⚕️ About
 
-This tool was built to help INCOHS medical students conveniently calculate their MBE standing, ensuring privacy, simplicity, and accuracy.
+This tool was built to help OAU COHS medical and dental students conveniently calculate their MBE standing, ensuring privacy, simplicity, and accuracy.
 
 ---
 
