@@ -135,19 +135,21 @@ export default function Calculator() {
     const results = []
 
     // Convert current 300L incourse to percentage (out of 20 -> percentage)
-    const incoursePercentage = (current300L / 20) * 100
+    // const incoursePercentage = (current300L / 20) * 100
+    //
+    // // Current total aggregate percentage
+    // const currentAggregate = current300L + current200L
+    // const aggregatePercentage = (currentAggregate / 40) * 100
 
-    // Current total aggregate percentage
-    const currentAggregate = current300L + current200L
-    const aggregatePercentage = (currentAggregate / 40) * 100
+    const totalIncource = current200L + current300L
 
     // For Pass: 50% - incourse percentage = what you need in 300L MBE
-    const neededForPass = 50 - incoursePercentage
+    const neededForPass = 50 - totalIncource
     if (neededForPass > 0) {
       results.push({
         grade: "Pass",
-        needed: Math.min(100, Math.max(0, neededForPass)),
-        achievable: neededForPass <= 100,
+        needed:  neededForPass,
+        achievable: neededForPass <= 60,
       })
     } else {
       results.push({
@@ -159,12 +161,12 @@ export default function Calculator() {
     }
 
     // For Distinction: 70% - current aggregate percentage = what you need overall
-    const neededForDistinction = 70 - aggregatePercentage
+    const neededForDistinction = 70 - totalIncource
     if (neededForDistinction > 0) {
       results.push({
         grade: "Distinction",
-        needed: Math.min(100, Math.max(0, neededForDistinction)),
-        achievable: neededForDistinction <= 100,
+        needed: neededForDistinction,
+        achievable: neededForDistinction <= 60,
         isOverall: true, // This indicates it's overall improvement needed
       })
     } else {
@@ -269,10 +271,10 @@ export default function Calculator() {
     ctx.fillStyle = "#ffffff"
     ctx.font = "bold 28px Arial, sans-serif"
     ctx.textAlign = "center"
-    ctx.fillText("INCOHS MBE AGGREGATE SCORE REPORT", 397, 35)
+    ctx.fillText("MBE AGGREGATE SCORE REPORT", 397, 35)
 
     ctx.font = "16px Arial, sans-serif"
-    ctx.fillText("Medical Board Examination Score Analysis", 397, 60)
+    ctx.fillText("First Medical Board Examination Score Analysis", 397, 60)
 
     // Student Info Box
     ctx.fillStyle = "#f0fdf4"
@@ -296,7 +298,7 @@ export default function Calculator() {
 
     // Course sections with improved styling
     const courses = [
-      { name: "ANATOMY", data: results.anatomy, color: "#16a34a", bgColor: "#f0fdf4" },
+      { name: "ANATOMY", data: results.anatomy, color: "#7db2f7", bgColor: "#f0f4fa" },
       { name: "BIOCHEMISTRY", data: results.biochemistry, color: "#2563eb", bgColor: "#eff6ff" },
       { name: "PHYSIOLOGY", data: results.physiology, color: "#7c3aed", bgColor: "#f3e8ff" },
     ]
@@ -315,27 +317,27 @@ export default function Calculator() {
       ctx.fillText(`${course.name} AGGREGATE`, 60, yPos + 15)
 
       // Grade badge
-      const gradeText = course.data.grade.grade
-      ctx.font = "bold 12px Arial, sans-serif"
-      const gradeWidth = ctx.measureText(gradeText).width + 20
-
-      if (gradeText === "Distinction") {
-        ctx.fillStyle = "#fef3c7"
-        ctx.fillRect(600, yPos - 5, gradeWidth, 25)
-        ctx.fillStyle = "#92400e"
-      } else if (gradeText === "Pass") {
-        ctx.fillStyle = "#dcfce7"
-        ctx.fillRect(600, yPos - 5, gradeWidth, 25)
-        ctx.fillStyle = "#166534"
-      } else {
-        ctx.fillStyle = "#f3f4f6"
-        ctx.fillRect(600, yPos - 5, gradeWidth, 25)
-        ctx.fillStyle = "#6b7280"
-      }
-
-      ctx.textAlign = "center"
-      ctx.fillText(gradeText, 600 + gradeWidth / 2, yPos + 12)
-      ctx.textAlign = "left"
+      // const gradeText = course.data.grade.grade
+      // ctx.font = "bold 12px Arial, sans-serif"
+      // const gradeWidth = ctx.measureText(gradeText).width + 20
+      //
+      // if (gradeText === "Distinction") {
+      //   ctx.fillStyle = "#fef3c7"
+      //   ctx.fillRect(600, yPos - 5, gradeWidth, 25)
+      //   ctx.fillStyle = "#92400e"
+      // } else if (gradeText === "Pass") {
+      //   ctx.fillStyle = "#dcfce7"
+      //   ctx.fillRect(600, yPos - 5, gradeWidth, 25)
+      //   ctx.fillStyle = "#166534"
+      // } else {
+      //   ctx.fillStyle = "#f3f4f6"
+      //   ctx.fillRect(600, yPos - 5, gradeWidth, 25)
+      //   ctx.fillStyle = "#6b7280"
+      // }
+      //
+      // ctx.textAlign = "center"
+      // ctx.fillText(gradeText, 600 + gradeWidth / 2, yPos + 12)
+      // ctx.textAlign = "left"
 
       // Course details in two columns
       ctx.fillStyle = "#000000"
@@ -355,8 +357,8 @@ export default function Calculator() {
       ctx.font = "12px Arial, sans-serif"
       course.data.requiredMBE.forEach((req, reqIndex) => {
         const reqText = req.message
-          ? `${req.grade}: ${req.message}`
-          : `${req.grade}: ${req.needed.toFixed(1)}%${req.isOverall ? " (overall)" : ""}`
+          ? `For ${req.grade}: ${req.message}`
+          : `For ${req.grade}: ${req.achievable ? (req.needed.toFixed(1)) : 'Distinction not achievable' }${req.achievable? '/60' : '' }`
         ctx.fillText(`• ${reqText}`, 420, yPos + 65 + reqIndex * 18)
       })
 
@@ -375,14 +377,14 @@ export default function Calculator() {
     ctx.fillText("GRADING SCALE", 60, yPos + 25)
 
     ctx.font = "14px Arial, sans-serif"
-    ctx.fillText("• Pass: 20-27/40 (50-69%)", 60, yPos + 50)
-    ctx.fillText("• Distinction: 28-40/40 (70-100%)", 300, yPos + 50)
+    ctx.fillText("• Pass: 50-69%", 60, yPos + 50)
+    ctx.fillText("• Distinction: 70-100%", 300, yPos + 50)
 
     // Footer
     ctx.fillStyle = "#6b7280"
     ctx.font = "12px Arial, sans-serif"
     ctx.textAlign = "center"
-    ctx.fillText("Generated by INCOHS MBE Calculator", 397, 1100)
+    ctx.fillText("Generated by Magna Medicos | MBE Standing App", 397, 1100)
     ctx.fillText("This report is confidential and for the student's personal use only.", 397, 1115)
 
     // Convert canvas to blob and download as PNG
@@ -407,7 +409,7 @@ export default function Calculator() {
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-sm sm:text-base">Back to Home</span>
           </Link>
-          <h1 className="text-lg sm:text-xl font-bold text-green-800">MBE Score Calculator</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-green-800">Magna Medicos | MBE Standing App</h1>
         </div>
       </header>
 
@@ -459,7 +461,7 @@ export default function Calculator() {
                         value={userInfo.class}
                         onChange={(e) => updateUserInfo("class", e.target.value)}
                         className="border-green-200 focus:border-green-500"
-                        placeholder="e.g., 300L Set A"
+                        placeholder="e.g. Magna Medicos"
                       />
                     </div>
                   </div>
@@ -672,11 +674,11 @@ export default function Calculator() {
                                 {results.anatomy.aggregate.toFixed(1)}/40
                               </span>
                             </div>
-                            <div
-                              className={`text-center text-xs sm:text-sm font-medium ${results.anatomy.grade.color}`}
-                            >
-                              Current Grade: {results.anatomy.grade.grade}
-                            </div>
+                            {/*<div*/}
+                            {/*  className={`text-center text-xs sm:text-sm font-medium ${results.anatomy.grade.color}`}*/}
+                            {/*>*/}
+                            {/*  Current Grade: {results.anatomy.grade.grade}*/}
+                            {/*</div>*/}
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-green-800 mb-2 text-sm sm:text-base">
@@ -686,7 +688,7 @@ export default function Calculator() {
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">
                                 <span>For {req.grade}:</span>
                                 <span className="font-medium">
-                                  {req.message || `${req.needed.toFixed(1)}%${req.isOverall ? " (overall)" : ""}`}
+                                   {req.achievable? (req.message || req.needed.toFixed(1)) : 'Distinction not achievable'}{req.achievable? '/60' : '' }
                                 </span>
                               </div>
                             ))}
@@ -721,11 +723,11 @@ export default function Calculator() {
                                 {results.biochemistry.aggregate.toFixed(1)}/40
                               </span>
                             </div>
-                            <div
-                              className={`text-center text-xs sm:text-sm font-medium ${results.biochemistry.grade.color}`}
-                            >
-                              Current Grade: {results.biochemistry.grade.grade}
-                            </div>
+                            {/*<div*/}
+                            {/*  className={`text-center text-xs sm:text-sm font-medium ${results.biochemistry.grade.color}`}*/}
+                            {/*>*/}
+                            {/*  Current Grade: {results.biochemistry.grade.grade}*/}
+                            {/*</div>*/}
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">
@@ -735,7 +737,7 @@ export default function Calculator() {
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">
                                 <span>For {req.grade}:</span>
                                 <span className="font-medium">
-                                  {req.message || `${req.needed.toFixed(1)}%${req.isOverall ? " (overall)" : ""}`}
+                                   {req.achievable? (req.message || req.needed.toFixed(1)) : 'Distinction not achievable'}{req.achievable? '/60' : '' }
                                 </span>
                               </div>
                             ))}
@@ -770,11 +772,11 @@ export default function Calculator() {
                                 {results.physiology.aggregate.toFixed(1)}/40
                               </span>
                             </div>
-                            <div
-                              className={`text-center text-xs sm:text-sm font-medium ${results.physiology.grade.color}`}
-                            >
-                              Current Grade: {results.physiology.grade.grade}
-                            </div>
+                            {/*<div*/}
+                            {/*  className={`text-center text-xs sm:text-sm font-medium ${results.physiology.grade.color}`}*/}
+                            {/*>*/}
+                            {/*  Current Grade: {results.physiology.grade.grade}*/}
+                            {/*</div>*/}
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-purple-800 mb-2 text-sm sm:text-base">
@@ -784,7 +786,7 @@ export default function Calculator() {
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">
                                 <span>For {req.grade}:</span>
                                 <span className="font-medium">
-                                  {req.message || `${req.needed.toFixed(1)}%${req.isOverall ? " (overall)" : ""}`}
+                                   {req.achievable? (req.message || req.needed.toFixed(1)) : 'Distinction not achievable'}{req.achievable? '/60' : '' }
                                 </span>
                               </div>
                             ))}
