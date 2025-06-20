@@ -9,7 +9,7 @@ export default function LandingPage() {
       <header className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-2">
           <GraduationCap className="h-8 w-8 text-green-600" />
-          <span className="text-xl font-bold text-green-800">INCOHS MBE Calculator</span>
+          <span className="text-xl font-bold text-green-800">Magna Medicos | MBE Standing App</span>
         </div>
       </header>
 
@@ -19,8 +19,7 @@ export default function LandingPage() {
           <div className="mb-8">
             <h1 className="text-4xl md:text-6xl font-bold text-green-800 mb-6">Know Your MBE Standing</h1>
             <p className="text-lg md:text-xl text-green-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Use this tool to compute your 300L incourse performance and 200L MBE contribution toward the Medical Board
-              Exam.
+              Use this tool to compute your 300L incourse performance and 200L MBE contribution toward your First Medical Board Exam. It is designed only for medical and dental students of OAU COHS first MBE.
             </p>
           </div>
 
@@ -45,14 +44,9 @@ export default function LandingPage() {
                   <span className="text-sm text-gray-600">200L MBE</span>
                   <span className="text-sm font-medium text-green-600">15.5/20</span>
                 </div>
-                <hr className="border-green-200" />
-                <div className="flex justify-between items-center font-bold">
-                  <span className="text-green-800">Final Score</span>
-                  <span className="text-green-600">34.0/40</span>
-                </div>
                 <div className="flex items-center justify-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Eligible for MBE</span>
+                  <CheckCircle className="h-6 w-6" />
+                  {/*<span className="text-sm font-medium">Eligible for MBE</span>*/}
                 </div>
               </div>
             </div>
@@ -82,14 +76,14 @@ export default function LandingPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="font-semibold text-green-800 mb-2">Instant Results</h3>
-              <p className="text-sm text-green-600">Know your eligibility status immediately after calculation</p>
+              <p className="text-sm text-green-600">Know your standing immediately after calculation</p>
             </div>
             <div className="text-center">
               <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <GraduationCap className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="font-semibold text-green-800 mb-2">MBE Ready</h3>
-              <p className="text-sm text-green-600">Designed specifically for INCOHS MBE requirements</p>
+              <p className="text-sm text-green-600">Designed specifically for OAU COHS Medical and Dental student</p>
             </div>
           </div>
         </div>
@@ -97,7 +91,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 text-center text-green-600 text-sm">
-        <p>© 2024 INCOHS MBE Calculator. Built for medical students.</p>
+        <p>© 2025 Magna Medicos | MBE Standing App. Built for medical and dental students.</p>
       </footer>
     </div>
   )
