@@ -46,7 +46,11 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build project
-        run: pnpm build
+        run: |
+          pnpm build
+          # Fix: Move files to root of out directory
+          mv .next/static/* out/
+          rm -rf .next
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_ASSET_PREFIX: ${{ steps.pages.outputs.base_path }}
@@ -55,19 +59,17 @@ jobs:
           SKIP_TYPE_CHECK: true
           CI: false
 
-      # Debugging steps to verify build output
-      - name: List root directory
-        run: ls -la
+      - name: Verify output structure
+        run: |
+          echo "Output directory contents:"
+          ls -la out
+          echo "Checking for index.html:"
+          ls -la out | grep index.html
 
-      - name: List .next directory
-        run: ls -la .next
-        continue-on-error: true
-
-      # Main fix: Use correct output directory
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./.next/static  # Updated path for static export
+          path: ./out
 
   deploy:
     environment:
