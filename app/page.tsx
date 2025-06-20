@@ -6,10 +6,20 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-lime-50">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-green-600" />
-          <span className="text-xl font-bold text-green-800">Magna Medicos | MBE Standing App</span>
+      <header className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
+            <span className="text-lg sm:text-xl font-bold text-green-800 text-center sm:text-left">
+        Magna Medicos | MBE Standing App
+      </span>
+          </div>
+          <Link
+              href="/about"
+              className="text-green-700 hover:text-green-800 font-medium text-base sm:text-lg"
+          >
+            About App
+          </Link>
         </div>
       </header>
 
