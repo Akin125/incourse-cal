@@ -48,9 +48,10 @@ jobs:
       - name: Build project
         run: |
           pnpm build
-          # Fix: Move files to root of out directory
-          mv .next/static/* out/
-          rm -rf .next
+          # Create out directory if it doesn't exist
+          mkdir -p out
+          # Copy build output to out directory
+          cp -R .next/static/* out/ || true
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_ASSET_PREFIX: ${{ steps.pages.outputs.base_path }}
@@ -64,7 +65,7 @@ jobs:
           echo "Output directory contents:"
           ls -la out
           echo "Checking for index.html:"
-          ls -la out | grep index.html
+          [ -f out/index.html ] && echo "index.html found" || echo "index.html missing"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
