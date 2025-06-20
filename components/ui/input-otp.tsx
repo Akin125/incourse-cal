@@ -1,10 +1,81 @@
 "use client"
 
 import * as React from "react"
-import { OTPInput, OTPInputContext } from "@/components/ui/input-otp"
 import { Dot } from "lucide-react"
-
 import { cn } from "@/lib/utils"
+
+interface InputOTPProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  maxLength?: number
+  containerClassName?: string
+  value?: string
+  onChange?: (value: string) => void
+}
+
+const OTPInputContext = React.createContext<{
+  slots: { char: string; hasFakeCaret: boolean; isActive: boolean }[]
+}>({
+  slots: [],
+})
+
+const OTPInput = React.forwardRef<HTMLInputElement, InputOTPProps>(
+  ({ className, containerClassName, maxLength = 6, value = "", onChange, ...props }, ref) => {
+    const [otp, setOTP] = React.useState(value.split(""))
+    const [activeIndex, setActiveIndex] = React.useState<number>(0)
+    const [hasFakeCaret, setHasFakeCaret] = React.useState<boolean>(false)
+
+    React.useEffect(() => {
+      setOTP(value.split(""))
+    }, [value])
+
+    const slots = React.useMemo(() => {
+      const arr = new Array(maxLength).fill("")
+      return arr.map((_, index) => ({
+        char: otp[index] || "",
+        hasFakeCaret: hasFakeCaret && activeIndex === index,
+        isActive: activeIndex === index,
+      }))
+    }, [activeIndex, hasFakeCaret, maxLength, otp])
+
+    const contextValue = React.useMemo(() => ({ slots }), [slots])
+
+    return (
+      <OTPInputContext.Provider value={contextValue}>
+        <div
+          className={cn(
+            "flex items-center gap-2 has-[:disabled]:opacity-50",
+            containerClassName
+          )}
+        >
+          <input
+            ref={ref}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]*"
+            maxLength={maxLength}
+            className="absolute w-0 h-0 opacity-0"
+            value={otp.join("")}
+            onChange={(e) => {
+              const newValue = e.target.value.slice(0, maxLength)
+              setOTP(newValue.split(""))
+              onChange?.(newValue)
+              if (newValue.length < maxLength) {
+                setActiveIndex(newValue.length)
+              }
+            }}
+            onFocus={() => {
+              setHasFakeCaret(true)
+              setActiveIndex(otp.length)
+            }}
+            onBlur={() => setHasFakeCaret(false)}
+            {...props}
+          />
+        </div>
+      </OTPInputContext.Provider>
+    )
+  }
+)
+OTPInput.displayName = "OTPInput"
 
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
@@ -68,4 +139,4 @@ const InputOTPSeparator = React.forwardRef<
 ))
 InputOTPSeparator.displayName = "InputOTPSeparator"
 
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
+export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator, OTPInputContext }
