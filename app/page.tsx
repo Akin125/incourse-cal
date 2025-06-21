@@ -29,7 +29,7 @@ export default function LandingPage() {
           <div className="mb-8">
             <h1 className="text-4xl md:text-6xl font-bold text-green-800 mb-6">Know Your MBE Standing</h1>
             <p className="text-lg md:text-xl text-green-700 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Use this tool to compute your 300L incourse performance and 200L MBE contribution toward your First Medical Board Exam. It is designed only for medical and dental students of OAU COHS first MBE.
+              Use this tool to compute your 300L incourse performance and 200L MBE contribution toward your First Medical Board Exam. It is designed only for 300 level medical and dental students of OAU COHS .
             </p>
           </div>
 
@@ -68,7 +68,7 @@ export default function LandingPage() {
               size="lg"
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              Start Calculation
+              Get Started
             </Button>
           </Link>
 

@@ -303,7 +303,7 @@ export default function Calculator() {
       { name: "PHYSIOLOGY", data: results.physiology, color: "#7c3aed", bgColor: "#f3e8ff" },
     ]
 
-    courses.forEach((course, index) => {
+    courses.forEach((course) => {
       // Course background
       ctx.fillStyle = course.bgColor
       ctx.fillRect(40, yPos - 10, 714, 140)
@@ -419,7 +419,15 @@ export default function Calculator() {
             <div className="space-y-6 sm:space-y-8">
               {/* Validation Errors */}
               {validationErrors.length > 0 && (
-                <Card className="border-red-200 bg-red-50">
+                <Card
+                  className="border-red-200 bg-red-50"
+                  id="validation-errors"
+                  ref={(el) => {
+                    if (el && validationErrors.length > 0) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                >
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="font-semibold text-red-800 mb-2">Please fix the following errors:</h3>
                     <ul className="list-disc list-inside space-y-1 text-red-700 text-sm">
