@@ -5,19 +5,20 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'export',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
+  // Add redirects configuration here
   async redirects() {
     return [
       {
-        source: '/',
-        destination: '/index.html',
+        source: '/index.html',
+        destination: '/',
         permanent: true,
-      },
-    ]
-  },
-}
+      }
+    ];
+  }
+};
 
-export default nextConfig
+export default nextConfig;

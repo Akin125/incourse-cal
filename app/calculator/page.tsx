@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { ArrowLeft, Download, Trophy, Target, Shield, Lock, Eye } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 interface CourseScores {
   anatomy: number[]
@@ -34,10 +35,14 @@ interface UserInfo {
 }
 
 export default function Calculator() {
+  const searchParams = useSearchParams()
+  const level = searchParams.get("level") || "300"
+  const is200Level = level === "200"
+
   const [scores, setScores] = useState<CourseScores>({
-    anatomy: [0, 0, 0],
-    biochemistry: [0, 0],
-    physiology: [0, 0],
+    anatomy: [0, 0, 0], // Always 3 incourses for anatomy
+    biochemistry: [0, 0], // Always 2 incourses for biochemistry
+    physiology: [0, 0], // Always 2 incourses for physiology
     mbe200L: {
       anatomy: 0,
       biochemistry: 0,
@@ -53,6 +58,13 @@ export default function Calculator() {
   const [showResults, setShowResults] = useState(false)
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const errorContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (validationErrors.length > 0 && errorContainerRef.current) {
+      errorContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [validationErrors])
 
   const updateScore = (course: keyof CourseScores, index: number | string, value: string) => {
     const numValue = Number.parseFloat(value) || 0
@@ -90,36 +102,34 @@ export default function Calculator() {
 
     // Check if any anatomy scores are empty or 0
     if (scores.anatomy.some((score) => score === 0)) {
-      errors.push("Please enter all Anatomy incourse scores")
+      errors.push(`Please enter all Anatomy incourse scores`)
     }
 
     // Check if any biochemistry scores are empty or 0
     if (scores.biochemistry.some((score) => score === 0)) {
-      errors.push("Please enter all Biochemistry incourse scores")
+      errors.push(`Please enter all Biochemistry incourse scores`)
     }
 
     // Check if any physiology scores are empty or 0
     if (scores.physiology.some((score) => score === 0)) {
-      errors.push("Please enter all Physiology incourse scores")
+      errors.push(`Please enter all Physiology incourse scores`)
     }
 
-    // Check if any 200L MBE scores are empty or 0
-    if (scores.mbe200L.anatomy === 0 || scores.mbe200L.biochemistry === 0 || scores.mbe200L.physiology === 0) {
+    // Only check 200L MBE scores for 300L students
+    if (!is200Level && (scores.mbe200L.anatomy === 0 || scores.mbe200L.biochemistry === 0 || scores.mbe200L.physiology === 0)) {
       errors.push("Please enter all 200L MBE scores")
     }
 
-    // Check if scores are within valid range (1-100)
+    // Check if scores are within valid range (0-100)
     const allScores = [
       ...scores.anatomy,
       ...scores.biochemistry,
       ...scores.physiology,
-      scores.mbe200L.anatomy,
-      scores.mbe200L.biochemistry,
-      scores.mbe200L.physiology,
+      ...(is200Level ? [] : [scores.mbe200L.anatomy, scores.mbe200L.biochemistry, scores.mbe200L.physiology]),
     ]
 
     if (allScores.some((score) => score < 0 || score > 100)) {
-      errors.push("All scores must be between 0 and 100")
+      errors.push(`All scores must be between 0 and 100`)
     }
 
     return errors
@@ -182,48 +192,77 @@ export default function Calculator() {
   }
 
   const calculateAggregate = () => {
-    // Calculate 300L averages for each course
+    // Calculate averages for each course
     const anatomyAvg = scores.anatomy.reduce((sum, score) => sum + score, 0) / scores.anatomy.length
     const biochemAvg = scores.biochemistry.reduce((sum, score) => sum + score, 0) / scores.biochemistry.length
     const physioAvg = scores.physiology.reduce((sum, score) => sum + score, 0) / scores.physiology.length
 
-    // Convert 300L scores to /20 scale
-    const anatomy300L = (anatomyAvg / 100) * 20
-    const biochem300L = (biochemAvg / 100) * 20
-    const physio300L = (physioAvg / 100) * 20
+    if (is200Level) {
+      // For 200L, convert scores to be out of 40 (from the average out of 100)
+      const anatomyAggregate = (anatomyAvg / 100) * 40
+      const biochemAggregate = (biochemAvg / 100) * 40
+      const physioAggregate = (physioAvg / 100) * 40
 
-    // Convert 200L MBE scores to /20 scale
-    const anatomy200L = (scores.mbe200L.anatomy / 100) * 20
-    const biochem200L = (scores.mbe200L.biochemistry / 100) * 20
-    const physio200L = (scores.mbe200L.physiology / 100) * 20
+      return {
+        anatomy: {
+          incourse300L: anatomyAggregate,
+          mbe200L: 0,
+          aggregate: anatomyAggregate,
+          grade: getGradeInfo(anatomyAggregate),
+          requiredMBE: calculateRequiredMBE(anatomyAggregate, 0),
+        },
+        biochemistry: {
+          incourse300L: biochemAggregate,
+          mbe200L: 0,
+          aggregate: biochemAggregate,
+          grade: getGradeInfo(biochemAggregate),
+          requiredMBE: calculateRequiredMBE(biochemAggregate, 0),
+        },
+        physiology: {
+          incourse300L: physioAggregate,
+          mbe200L: 0,
+          aggregate: physioAggregate,
+          grade: getGradeInfo(physioAggregate),
+          requiredMBE: calculateRequiredMBE(physioAggregate, 0),
+        },
+      }
+    } else {
+      // 300L calculation (existing logic)
+      const anatomy300L = (anatomyAvg / 100) * 20
+      const biochem300L = (biochemAvg / 100) * 20
+      const physio300L = (physioAvg / 100) * 20
 
-    // Calculate aggregate for each course (out of 40)
-    const anatomyAggregate = anatomy300L + anatomy200L
-    const biochemAggregate = biochem300L + biochem200L
-    const physioAggregate = physio300L + physio200L
+      const anatomy200L = (scores.mbe200L.anatomy / 100) * 20
+      const biochem200L = (scores.mbe200L.biochemistry / 100) * 20
+      const physio200L = (scores.mbe200L.physiology / 100) * 20
 
-    return {
-      anatomy: {
-        incourse300L: anatomy300L,
-        mbe200L: anatomy200L,
-        aggregate: anatomyAggregate,
-        grade: getGradeInfo(anatomyAggregate),
-        requiredMBE: calculateRequiredMBE(anatomy300L, anatomy200L),
-      },
-      biochemistry: {
-        incourse300L: biochem300L,
-        mbe200L: biochem200L,
-        aggregate: biochemAggregate,
-        grade: getGradeInfo(biochemAggregate),
-        requiredMBE: calculateRequiredMBE(biochem300L, biochem200L),
-      },
-      physiology: {
-        incourse300L: physio300L,
-        mbe200L: physio200L,
-        aggregate: physioAggregate,
-        grade: getGradeInfo(physioAggregate),
-        requiredMBE: calculateRequiredMBE(physio300L, physio200L),
-      },
+      const anatomyAggregate = anatomy300L + anatomy200L
+      const biochemAggregate = biochem300L + biochem200L
+      const physioAggregate = physio300L + physio200L
+
+      return {
+        anatomy: {
+          incourse300L: anatomy300L,
+          mbe200L: anatomy200L,
+          aggregate: anatomyAggregate,
+          grade: getGradeInfo(anatomyAggregate),
+          requiredMBE: calculateRequiredMBE(anatomy300L, anatomy200L),
+        },
+        biochemistry: {
+          incourse300L: biochem300L,
+          mbe200L: biochem200L,
+          aggregate: biochemAggregate,
+          grade: getGradeInfo(biochemAggregate),
+          requiredMBE: calculateRequiredMBE(biochem300L, biochem200L),
+        },
+        physiology: {
+          incourse300L: physio300L,
+          mbe200L: physio200L,
+          aggregate: physioAggregate,
+          grade: getGradeInfo(physioAggregate),
+          requiredMBE: calculateRequiredMBE(physio300L, physio200L),
+        },
+      }
     }
   }
 
@@ -262,8 +301,8 @@ export default function Calculator() {
 
     // Header with gradient background
     const gradient = ctx.createLinearGradient(0, 0, 794, 80)
-    gradient.addColorStop(0, "#16a34a")
-    gradient.addColorStop(1, "#22c55e")
+    gradient.addColorStop(0, is200Level ? "#2563eb" : "#16a34a")
+    gradient.addColorStop(1, is200Level ? "#60a5fa" : "#22c55e")
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, 794, 80)
 
@@ -274,7 +313,7 @@ export default function Calculator() {
     ctx.fillText("MBE AGGREGATE SCORE REPORT", 397, 35)
 
     ctx.font = "16px Arial, sans-serif"
-    ctx.fillText("First Medical Board Examination Score Analysis", 397, 60)
+    ctx.fillText(`${is200Level ? "200 Level" : "300 Level"}  Medical Board Examination Score Analysis`, 397, 60)
 
     // Student Info Box
     ctx.fillStyle = "#f0fdf4"
@@ -303,7 +342,7 @@ export default function Calculator() {
       { name: "PHYSIOLOGY", data: results.physiology, color: "#7c3aed", bgColor: "#f3e8ff" },
     ]
 
-    courses.forEach((course) => {
+    courses.forEach((course, index) => {
       // Course background
       ctx.fillStyle = course.bgColor
       ctx.fillRect(40, yPos - 10, 714, 140)
@@ -344,15 +383,17 @@ export default function Calculator() {
       ctx.font = "14px Arial, sans-serif"
 
       // Left column - scores
-      ctx.fillText(`300L Incourse Average: ${course.data.incourse300L.toFixed(1)}/20`, 60, yPos + 45)
-      ctx.fillText(`200L MBE Score: ${course.data.mbe200L.toFixed(1)}/20`, 60, yPos + 65)
+      ctx.fillText(`${is200Level? '200L': '300L'} Incourse Average: ${course.data.incourse300L.toFixed(1)}${is200Level? '/40': '/20'}`, 60, yPos + 45)
+      if (!is200Level) {
+        ctx.fillText(`200L MBE Score: ${course.data.mbe200L.toFixed(1)}/20`, 60, yPos + 65)
+      }
 
       ctx.font = "bold 16px Arial, sans-serif"
       ctx.fillText(`Total Aggregate: ${course.data.aggregate.toFixed(1)}/40`, 60, yPos + 90)
 
       // Right column - requirements
       ctx.font = "bold 14px Arial, sans-serif"
-      ctx.fillText("Required 300L MBE Scores:", 400, yPos + 45)
+      ctx.fillText(`Required ${is200Level? '200L': '300L'} MBE Scores:`, 400, yPos + 45)
 
       ctx.font = "12px Arial, sans-serif"
       course.data.requiredMBE.forEach((req, reqIndex) => {
@@ -393,7 +434,8 @@ export default function Calculator() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `${userInfo.name || "Student"}_MBE_Report.png`
+        const levelText = is200Level ? "200L" : "300L"
+        a.download = `${userInfo.name || "Student"}_${levelText}_MBE_Report.png`
         a.click()
         URL.revokeObjectURL(url)
       }
@@ -419,24 +461,18 @@ export default function Calculator() {
             <div className="space-y-6 sm:space-y-8">
               {/* Validation Errors */}
               {validationErrors.length > 0 && (
-                <Card
-                  className="border-red-200 bg-red-50"
-                  id="validation-errors"
-                  ref={(el) => {
-                    if (el && validationErrors.length > 0) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }}
-                >
-                  <CardContent className="p-4 sm:p-6">
-                    <h3 className="font-semibold text-red-800 mb-2">Please fix the following errors:</h3>
-                    <ul className="list-disc list-inside space-y-1 text-red-700 text-sm">
-                      {validationErrors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                <div ref={errorContainerRef}>
+                  <Card className="border-red-200 bg-red-50">
+                    <CardContent className="p-4 sm:p-6">
+                      <h3 className="font-semibold text-red-800 mb-2">Please fix the following errors:</h3>
+                      <ul className="list-disc list-inside space-y-1 text-red-700 text-sm">
+                        {validationErrors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {/* User Information */}
@@ -493,9 +529,11 @@ export default function Calculator() {
                       <TabsTrigger value="physiology" className="text-xs sm:text-sm py-2">
                         Physiology
                       </TabsTrigger>
-                      <TabsTrigger value="mbe" className="text-xs sm:text-sm py-2">
-                        200L MBE
-                      </TabsTrigger>
+                      {!is200Level && (
+                        <TabsTrigger value="mbe" className="text-xs sm:text-sm py-2">
+                          200L MBE
+                        </TabsTrigger>
+                      )}
                     </TabsList>
 
                     <TabsContent value="anatomy" className="space-y-4">
@@ -567,56 +605,58 @@ export default function Calculator() {
                       ))}
                     </TabsContent>
 
-                    <TabsContent value="mbe" className="space-y-4">
-                      <h3 className="font-semibold text-green-800 mb-4 text-base sm:text-lg">200L MBE Scores</h3>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="mbe-anatomy" className="text-sm font-medium">
-                            200L Anatomy MBE (out of 100)
-                          </Label>
-                          <Input
-                            id="mbe-anatomy"
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={scores.mbe200L.anatomy || ""}
-                            onChange={(e) => updateScore("mbe200L", "anatomy", e.target.value)}
-                            className="border-green-200 focus:border-green-500"
-                            placeholder="Enter your 200L Anatomy MBE score"
-                          />
+                    {!is200Level && (
+                      <TabsContent value="mbe" className="space-y-4">
+                        <h3 className="font-semibold text-green-800 mb-4 text-base sm:text-lg">200L MBE Scores</h3>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="mbe-anatomy" className="text-sm font-medium">
+                              200L Anatomy MBE (out of 100)
+                            </Label>
+                            <Input
+                              id="mbe-anatomy"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={scores.mbe200L.anatomy || ""}
+                              onChange={(e) => updateScore("mbe200L", "anatomy", e.target.value)}
+                              className="border-green-200 focus:border-green-500"
+                              placeholder="Enter your 200L Anatomy MBE score"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="mbe-biochem" className="text-sm font-medium">
+                              200L Biochemistry MBE (out of 100)
+                            </Label>
+                            <Input
+                              id="mbe-biochem"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={scores.mbe200L.biochemistry || ""}
+                              onChange={(e) => updateScore("mbe200L", "biochemistry", e.target.value)}
+                              className="border-green-200 focus:border-green-500"
+                              placeholder="Enter your 200L Biochemistry MBE score"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="mbe-physio" className="text-sm font-medium">
+                              200L Physiology MBE (out of 100)
+                            </Label>
+                            <Input
+                              id="mbe-physio"
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={scores.mbe200L.physiology || ""}
+                              onChange={(e) => updateScore("mbe200L", "physiology", e.target.value)}
+                              className="border-green-200 focus:border-green-500"
+                              placeholder="Enter your 200L Physiology MBE score"
+                            />
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="mbe-biochem" className="text-sm font-medium">
-                            200L Biochemistry MBE (out of 100)
-                          </Label>
-                          <Input
-                            id="mbe-biochem"
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={scores.mbe200L.biochemistry || ""}
-                            onChange={(e) => updateScore("mbe200L", "biochemistry", e.target.value)}
-                            className="border-green-200 focus:border-green-500"
-                            placeholder="Enter your 200L Biochemistry MBE score"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="mbe-physio" className="text-sm font-medium">
-                            200L Physiology MBE (out of 100)
-                          </Label>
-                          <Input
-                            id="mbe-physio"
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={scores.mbe200L.physiology || ""}
-                            onChange={(e) => updateScore("mbe200L", "physiology", e.target.value)}
-                            className="border-green-200 focus:border-green-500"
-                            placeholder="Enter your 200L Physiology MBE score"
-                          />
-                        </div>
-                      </div>
-                    </TabsContent>
+                      </TabsContent>
+                    )}
                   </Tabs>
                 </CardContent>
               </Card>
@@ -642,7 +682,10 @@ export default function Calculator() {
                     <h2 className="text-xl sm:text-2xl font-bold text-green-800 mb-2">
                       {userInfo.name || "Student"}'s MBE Report
                     </h2>
-                    <p className="text-green-600 text-sm sm:text-base">{userInfo.class || "Class Not Specified"}</p>
+                    <div className="space-y-1">
+                      <p className="text-green-600 text-sm sm:text-base">{userInfo.class || "Class Not Specified"}</p>
+                      <p className="text-green-600 text-sm sm:text-base font-medium">{is200Level ? "200 Level" : "300 Level"} Student</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -668,13 +711,17 @@ export default function Calculator() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                           <div className="space-y-3">
                             <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-green-700">300L Incourse Average</span>
-                              <span className="font-medium">{results.anatomy.incourse300L.toFixed(1)}/20</span>
+                              <span className="text-green-700">{is200Level? '200L' : '300L' } Incourse Average</span>
+                              <span className="font-medium">{results.anatomy.incourse300L.toFixed(1)}{is200Level? '/40':'/20'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-green-700">200L MBE</span>
-                              <span className="font-medium">{results.anatomy.mbe200L.toFixed(1)}/20</span>
-                            </div>
+                            {is200Level? <></>
+                                :
+                                <div className="flex justify-between items-center text-sm sm:text-base">
+                                  <span className="text-green-700">200L MBE</span>
+                                  <span className="font-medium">{results.anatomy.mbe200L.toFixed(1)}/20</span>
+                                </div>
+                            }
+
                             <hr className="border-green-300" />
                             <div className="flex justify-between items-center font-bold text-base sm:text-lg">
                               <span className="text-green-800">Total Aggregate</span>
@@ -690,7 +737,7 @@ export default function Calculator() {
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-green-800 mb-2 text-sm sm:text-base">
-                              Required 300L MBE Scores:
+                              Required {is200Level? '200L' : '300L'} MBE Scores:
                             </h5>
                             {results.anatomy.requiredMBE.map((req, index) => (
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">
@@ -717,13 +764,16 @@ export default function Calculator() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                           <div className="space-y-3">
                             <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-blue-700">300L Incourse Average</span>
-                              <span className="font-medium">{results.biochemistry.incourse300L.toFixed(1)}/20</span>
+                              <span className="text-blue-700">{is200Level? '200L': '300L'} Incourse Average</span>
+                              <span className="font-medium">{results.biochemistry.incourse300L.toFixed(1)}{is200Level? '/40': '/20'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-blue-700">200L MBE</span>
-                              <span className="font-medium">{results.biochemistry.mbe200L.toFixed(1)}/20</span>
-                            </div>
+                            {is200Level? <></>:
+                                <div className="flex justify-between items-center text-sm sm:text-base">
+                                  <span className="text-blue-700">200L MBE</span>
+                                  <span className="font-medium">{results.biochemistry.mbe200L.toFixed(1)}/20</span>
+                                </div>
+                            }
+
                             <hr className="border-blue-300" />
                             <div className="flex justify-between items-center font-bold text-base sm:text-lg">
                               <span className="text-blue-800">Total Aggregate</span>
@@ -739,7 +789,7 @@ export default function Calculator() {
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">
-                              Required 300L MBE Scores:
+                              Required {is200Level? '200L': '300L'} MBE Scores:
                             </h5>
                             {results.biochemistry.requiredMBE.map((req, index) => (
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">
@@ -766,13 +816,15 @@ export default function Calculator() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                           <div className="space-y-3">
                             <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-purple-700">300L Incourse Average</span>
-                              <span className="font-medium">{results.physiology.incourse300L.toFixed(1)}/20</span>
+                              <span className="text-purple-700">{is200Level? '200L': '300L'} Incourse Average</span>
+                              <span className="font-medium">{results.physiology.incourse300L.toFixed(1)}{is200Level? '/40': '/20'}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm sm:text-base">
-                              <span className="text-purple-700">200L MBE</span>
-                              <span className="font-medium">{results.physiology.mbe200L.toFixed(1)}/20</span>
-                            </div>
+                            {is200Level? <></> :
+                                <div className="flex justify-between items-center text-sm sm:text-base">
+                                  <span className="text-purple-700">200L MBE</span>
+                                  <span className="font-medium">{results.physiology.mbe200L.toFixed(1)}/20</span>
+                                </div>
+                            }
                             <hr className="border-purple-300" />
                             <div className="flex justify-between items-center font-bold text-base sm:text-lg">
                               <span className="text-purple-800">Total Aggregate</span>
@@ -788,7 +840,7 @@ export default function Calculator() {
                           </div>
                           <div className="space-y-2">
                             <h5 className="font-medium text-purple-800 mb-2 text-sm sm:text-base">
-                              Required 300L MBE Scores:
+                              Required {is200Level? '200L': '300L'} MBE Scores:
                             </h5>
                             {results.physiology.requiredMBE.map((req, index) => (
                               <div key={index} className="flex justify-between items-center text-xs sm:text-sm">

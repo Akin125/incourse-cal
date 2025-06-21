@@ -8,12 +8,14 @@ export default function AboutPage() {
       {/* Header */}
       <header className="container mx-auto px-4 py-4 sm:py-6">
         <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />
-            <span className="text-lg sm:text-xl font-bold text-green-800 text-center sm:text-left">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {/*<GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 text-green-600" />*/}
+              <span className="text-lg sm:text-xl font-bold text-green-800 text-center sm:text-left">
               Magna Medicos | MBE Standing App
             </span>
-          </div>
+            </div>
+          </Link>
           <Link
             href="/"
             className="text-green-700 hover:text-green-800 font-medium text-base sm:text-lg"
@@ -35,7 +37,7 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent>
             <p className="text-lg text-green-700">
-              Magna Medicos MBE Calculator is a privacy-focused, user-friendly web application specifically designed for 300 level medical
+              Magna Medicos MBE Calculator is a privacy-focused, user-friendly web application specifically designed for 200 level and 300 level medical
               and dental students at Obafemi Awolowo University, College of Health Sciences. It helps students calculate and understand
               their required and aggregate scores for the Medical Board Examination (MBE). All calculations are performed locally in your
               browser—ensuring your data remains completely private and secure.
@@ -94,6 +96,11 @@ export default function AboutPage() {
           <CardContent>
             <p className="text-green-700 mb-4">
               For suggestions, or contributions:
+            </p>
+            <p className="text-green-700 mb-2">
+              Odediran Philip Seyifunmi<br />
+              Email: <a href="mailto:philipoluseyi@gmail.com" className="underline hover:text-green-800">philipoluseyi@gmail.com</a><br />
+              WhatsApp: <a href="https://wa.me/2347016896419" className="underline hover:text-green-800" target="_blank" rel="noopener noreferrer">+2347016896419</a>
             </p>
             <a
               href="https://github.com/Akin125/incourse-cal"
