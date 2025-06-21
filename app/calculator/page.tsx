@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -35,6 +35,24 @@ interface UserInfo {
 }
 
 export default function Calculator() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-lime-50">
+      <main className="container mx-auto px-4 py-4 sm:py-8">
+          <Suspense
+              fallback={
+                  <div className="flex justify-center items-center min-h-[60vh] w-full h-[70vh]">
+                      <span className="animate-spin rounded-full border-4 border-green-600 border-t-transparent h-16 w-16"></span>
+                  </div>
+              }
+          >
+              <CalculatorContent />
+          </Suspense>
+      </main>
+    </div>
+  )
+}
+
+function CalculatorContent() {
   const searchParams = useSearchParams()
   const level = searchParams.get("level") || "300"
   const is200Level = level === "200"
@@ -447,10 +465,10 @@ export default function Calculator() {
       {/* Header */}
       <header className="container mx-auto px-4 py-4 sm:py-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 text-green-600 hover:text-green-700">
+          <div  onClick={() => window.history.back()} style={{ cursor: "pointer" }} className="flex items-center gap-2 text-green-600 hover:text-green-700">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-sm sm:text-base">Back to Home</span>
-          </Link>
+            <span className="text-sm sm:text-base">Back</span>
+          </div>
           <h1 className="text-lg sm:text-xl font-bold text-green-800">Magna Medicos | MBE Standing App</h1>
         </div>
       </header>
