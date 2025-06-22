@@ -139,5 +139,3 @@ See [LICENSE](LICENSE) for details.
 This tool was built to help OAU COHS medical and dental students conveniently calculate their MBE standing, ensuring privacy, simplicity, and accuracy.
 
 ---
-
-**Start calculating your MBE eligibility instantly!**
